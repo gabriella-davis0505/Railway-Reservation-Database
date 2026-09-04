@@ -15,12 +15,15 @@
 
 SELECT
     ts.UniqueTrainNumber,
+    ts.ScheduleID,
     COUNT(t.UniqueReferenceCode) AS SecondClassSeatsBooked
 FROM TrainSchedule ts
 JOIN IntermediateStation is_l
     ON is_l.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_l.ScheduleID = ts.ScheduleID
 JOIN IntermediateStation is_lo
     ON is_lo.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_lo.ScheduleID = ts.ScheduleID
 JOIN Booking b
     ON b.JourneyDate = ts.JourneyDate
 JOIN Ticket t
@@ -39,8 +42,12 @@ WHERE ts.JourneyDate = DATE '2025-12-01'
     )
     AND is_l.SequenceNumber < is_lo.SequenceNumber
     AND t.ClassOfTravel = 'Second'
-GROUP BY ts.UniqueTrainNumber
-ORDER BY ts.UniqueTrainNumber;
+GROUP BY
+    ts.UniqueTrainNumber,
+    ts.ScheduleID
+ORDER BY
+    ts.UniqueTrainNumber,
+    ts.ScheduleID;
 
 
 -- ------------------------------------------------------------
@@ -51,12 +58,15 @@ ORDER BY ts.UniqueTrainNumber;
 
 SELECT DISTINCT
     ts.UniqueTrainNumber,
+    ts.ScheduleID,
     is_l.DepartureTimeAtSource AS LoughboroughDepartureTime
 FROM TrainSchedule ts
 JOIN IntermediateStation is_l
     ON is_l.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_l.ScheduleID = ts.ScheduleID
 JOIN IntermediateStation is_lo
     ON is_lo.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_lo.ScheduleID = ts.ScheduleID
 WHERE is_l.StationCode = (
         SELECT StationCode
         FROM Station
@@ -72,7 +82,8 @@ WHERE is_l.StationCode = (
         BETWEEN TIME '18:00:00' AND TIME '21:00:00'
 ORDER BY
     LoughboroughDepartureTime,
-    ts.UniqueTrainNumber;
+    ts.UniqueTrainNumber,
+    ts.ScheduleID;
 
 
 -- ------------------------------------------------------------
@@ -83,12 +94,15 @@ ORDER BY
 
 SELECT DISTINCT
     ts.UniqueTrainNumber,
+    ts.ScheduleID,
     is_l.DepartureTimeAtSource AS LoughboroughDepartureTime
 FROM TrainSchedule ts
 JOIN IntermediateStation is_l
     ON is_l.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_l.ScheduleID = ts.ScheduleID
 JOIN IntermediateStation is_lo
     ON is_lo.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_lo.ScheduleID = ts.ScheduleID
 WHERE is_l.StationCode = (
         SELECT StationCode
         FROM Station
@@ -110,7 +124,8 @@ WHERE is_l.StationCode = (
     )
 ORDER BY
     LoughboroughDepartureTime,
-    ts.UniqueTrainNumber;
+    ts.UniqueTrainNumber,
+    ts.ScheduleID;
 
 
 -- ------------------------------------------------------------
@@ -202,6 +217,7 @@ FETCH FIRST 1 ROW ONLY;
 
 SELECT
     ts.UniqueTrainNumber,
+    ts.ScheduleID,
     is_sh.DepartureTimeAtSource AS ServiceTime,
     COUNT(t.UniqueReferenceCode) AS TicketsBooked
 
@@ -209,9 +225,11 @@ FROM TrainSchedule ts
 
 JOIN IntermediateStation is_sh
     ON is_sh.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_sh.ScheduleID = ts.ScheduleID
 
 JOIN IntermediateStation is_lb
     ON is_lb.UniqueTrainNumber = ts.UniqueTrainNumber
+    AND is_lb.ScheduleID = ts.ScheduleID
 
 LEFT JOIN Booking b
     ON b.JourneyDate = ts.JourneyDate
@@ -238,8 +256,10 @@ WHERE EXTRACT(YEAR FROM ts.JourneyDate) = 2025
 
 GROUP BY
     ts.UniqueTrainNumber,
+    ts.ScheduleID,
     is_sh.DepartureTimeAtSource
 
 ORDER BY
     ServiceTime,
-    ts.UniqueTrainNumber;
+    ts.UniqueTrainNumber,
+    ts.ScheduleID;
